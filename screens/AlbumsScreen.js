@@ -1,9 +1,9 @@
 import React from 'react'
-import { View, ActivityIndicator, StyleSheet, Dimensions, ScrollView, FlatList, Image } from 'react-native'
-import { Card, Text, ListItem } from 'react-native-elements'
+import { ScrollView, StyleSheet, Image } from 'react-native'
 import { connect } from 'react-redux'
 
-import { fetchAlbums, fetchPhotos } from '../actions/albums'
+import { fetchAlbums, fetchPhotos, setAlbums, setPhotos, getData, storeData } from '../actions/albums'
+import { Album } from '../components/Album'
 
 class AlbumsScreen extends React.Component {
   static navigationOptions = {
@@ -21,58 +21,56 @@ class AlbumsScreen extends React.Component {
   }
 
   componentDidMount() {
-    this.getAlbums()
-    this.getPhotos()
+    this.getStoredData('albums')
+    this.getStoredData('photos')
+  }
+
+  async getStoredData(key) {
+    const data = await getData(key)
+    switch (key) {
+      case 'albums':
+        if (data) {
+          this.props.setAlbums(data)
+          this.setState({ albumsLoaded: true })
+        }
+        else { this.getAlbums() }
+        return
+      case 'photos':
+        if (data) { 
+          this.props.setPhotos(data)
+          this.setState({ photosLoaded: true })
+        }
+        else { this.getPhotos() }
+        return
+      default:
+        return
+    }
   }
 
   async getAlbums() {
-    const success = await this.props.fetchAlbums()
-    if (success) {
+    const data = await this.props.fetchAlbums()
+    if (data) {
       this.setState({ albumsLoaded: true })
+      storeData('albums', data.albums)
     }
   }
 
   async getPhotos() {
-    const success = await this.props.fetchPhotos()
-    if (success) {
+    const data = await this.props.fetchPhotos()
+    if (data) {
       this.setState({ photosLoaded: true })
+      storeData('photos', data.photos)
     }
-  }
-
-  renderAlbums() {
-    const { userID, albums } = this.props
-    // The database is extremely inefficient as it forces you to download other users data
-    const userAlbums = albums.filter((album) => album.userId === userID)
-    return userAlbums.map((album) => (
-      <Card key={album.id} containerStyle={styles.albumCard} titleStyle={styles.titleCard} title={album.title}>
-        <View style={[styles.album, {maxHeight: Dimensions.get('window').width * 2 / 3}]}>{this.renderPhotos(album.id, 0, 2)}</View>
-        <View style={[styles.album, {maxHeight: Dimensions.get('window').width * 1 / 3}]}>{this.renderPhotos(album.id, 3, 5)}</View>
-      </Card>
-    ))
-  }
-
-  renderPhotos(albumID, minIndex, maxIndex) {
-    const { photos } = this.props
-    const albumPhotos = photos.filter((photo) => photo.albumId === albumID)
-    return albumPhotos.map((photo, index) => {
-      if (index >= minIndex && index <= maxIndex) {
-        return (
-          <Image
-            key={index}
-            source={{ uri: index === 0 ? photo.url : photo.thumbnailUrl }}
-            style={index === 0 ? styles.imagePreviewMain : styles.imagePreview}
-            PlaceholderContent={<ActivityIndicator />} />
-        )
-      } else { return }
-    })
   }
 
   render() {
     const { albumsLoaded, photosLoaded } = this.state
+    const { photos, userID, albums } = this.props
     return (
-      <View style={styles.container}>
-        {albumsLoaded && photosLoaded && <ScrollView>{this.renderAlbums()}</ScrollView>}
-      </View>
+      <ScrollView style={styles.container}>
+        {albumsLoaded && photosLoaded && <Album photos={photos} userID={userID} albums={albums} />
+          || <Image style={styles.loading} source={require('../assets/images/loading.gif')} />}
+      </ScrollView>
     )
   }
 }
@@ -82,31 +80,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  albumCard: {
-    margin: 0,
-    padding: 0
-  },
-  titleCard: {
-    fontSize: 20,
-    paddingBottom: 0,
-    marginBottom: 0
-  },
-  album: {
-    flexWrap: 'wrap',
+  loading: {
     alignSelf: 'center',
-  },
-  imagePreviewMain: {
-    width: Dimensions.get('window').width * 2 / 3,
-    height: Dimensions.get('window').width * 2 / 3,
-    resizeMode: 'cover'
-  },
-  imagePreview: {
-    width: Dimensions.get('window').width * 1 / 3,
-    height: Dimensions.get('window').width * 1 / 3,
-    resizeMode: 'cover'
-  },
-  image: {
-
+    width: 150,
+    height: 150
   }
 })
 
@@ -118,7 +95,9 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   fetchAlbums: () => dispatch(fetchAlbums()),
-  fetchPhotos: () => dispatch(fetchPhotos())
+  setAlbums: (albums) => dispatch(setAlbums(albums)),
+  fetchPhotos: () => dispatch(fetchPhotos()),
+  setPhotos: (photos) => dispatch(setPhotos(photos))
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(AlbumsScreen)

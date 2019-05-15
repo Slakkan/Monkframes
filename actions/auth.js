@@ -1,4 +1,4 @@
-const setUser = (userID) => ({
+export const setUser = (userID) => ({
     type: 'SET_USER',
     userID
 })
