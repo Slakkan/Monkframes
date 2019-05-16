@@ -3,9 +3,9 @@ import { connect } from 'react-redux'
 import { View, ScrollView, StyleSheet } from 'react-native';
 import { Button } from 'react-native-elements'
 
-import { clearStorage } from '../actions/albums'
+import { clearStorage, clearAlbumsStore } from '../actions/data'
 import { setUser } from '../actions/auth'
-import {  } from 'react-native-gesture-handler';
+import { } from 'react-native-gesture-handler';
 
 class InfoScreen extends React.Component {
   static navigationOptions = {
@@ -13,8 +13,14 @@ class InfoScreen extends React.Component {
   };
 
   changeUser(num) {
+    this.props.navigation.navigate('Albums')
     this.props.setUser(num)
+  }
+
+  deleteSavedData() {
     clearStorage()
+    this.props.clearAlbumsStore()
+    this.props.navigation.navigate('Albums', { reload: true })
   }
 
   renderLoginButtons() {
@@ -36,6 +42,11 @@ class InfoScreen extends React.Component {
       <ScrollView>
         <View style={styles.container}>
           {this.renderLoginButtons()}
+          <Button
+            title={'DELETE STORAGE'}
+            containerStyle={styles.buttonContainer}
+            buttonStyle={styles.buttonDelete}
+            onPress={() => this.deleteSavedData()} />
         </View>
       </ScrollView>
     );
@@ -55,11 +66,15 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: '#f50'
+  },
+  buttonDelete: {
+    backgroundColor: '#f50'
   }
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  setUser: (num) => dispatch(setUser(num))
+  setUser: (num) => dispatch(setUser(num)),
+  clearAlbumsStore: () => dispatch(clearAlbumsStore())
 })
 
 export default connect(undefined, mapDispatchToProps)(InfoScreen)

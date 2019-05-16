@@ -28,6 +28,10 @@ export const fetchPhotos = () => {
     }
 }
 
+export const clearAlbumsStore = () => ({
+    type: 'CLEAR_ALBUMS_STORE'
+})
+
 export const storeData = async (key, data) => {
     try {
         const JSONdata = JSON.stringify(data)
@@ -52,7 +56,7 @@ export const getData = async (key) => {
 export const clearStorage = async () => {
     try {
         await AsyncStorage.clear()
-        return true
+        console.log('Data cleared')
     } catch (error) {
         console.log(e)
     }

@@ -19,13 +19,11 @@ export const Preview = ({photos, albumID, minIndex, maxIndex}) => {
 
 const styles = StyleSheet.create({
     imagePreviewMain: {
-      width: Dimensions.get('window').width * 2 / 3,
-      height: Dimensions.get('window').width * 2 / 3,
-      resizeMode: 'cover'
+      width: Dimensions.get('window').width * 2 / 4,
+      height: Dimensions.get('window').width * 2 / 4,
     },
     imagePreview: {
-      width: Dimensions.get('window').width * 1 / 3,
-      height: Dimensions.get('window').width * 1 / 3,
-      resizeMode: 'cover'
+      width: Dimensions.get('window').width * 1 / 4,
+      height: Dimensions.get('window').width * 1 / 4,
     }
   })
