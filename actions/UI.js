@@ -1,3 +1,4 @@
-export const changeOverlayVisibility = () => ({
-    type: 'OVERLAY_VISIBILITY'
+export const changeOverlayVisibility = (albumID) => ({
+    type: 'OVERLAY_VISIBILITY',
+    albumID
 })

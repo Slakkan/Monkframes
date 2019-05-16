@@ -7,7 +7,7 @@ import { NavigationEvents } from 'react-navigation'
 import loading from '../assets/images/loading.gif'
 import { fetchAlbums, fetchPhotos, setAlbums, setPhotos, getData, storeData } from '../actions/data'
 import Album from '../components/Album'
-import PhotosOverlay from '../components/Photos'
+import PhotosOverlay from '../components/PhotosOverlay'
 
 class AlbumsScreen extends React.Component {
   static navigationOptions = {
@@ -19,17 +19,25 @@ class AlbumsScreen extends React.Component {
     this.state = {
       albumsLoaded: false,
       photosLoaded: false,
+      dataStructured: false
+    }
+  }
+
+  componentDidUpdate() {
+    const { albumsLoaded, photosLoaded, dataStructured } = this.state
+    if (!dataStructured && albumsLoaded && photosLoaded) {
+      this.structureData()
     }
   }
 
   checkForData() {
     const { albums, photos } = this.props
     if (!albums) {
-      this.setState({ albumsLoaded: false })
+      this.setState({ albumsLoaded: false, dataStructured:false, data:[] })
       this.getStoredData('albums')
     }
     if (!photos) {
-      this.setState({ photosLoaded: false })
+      this.setState({ photosLoaded: false, dataStructured:false, data: [] })
       this.getStoredData('photos')
     }
   }
@@ -72,16 +80,32 @@ class AlbumsScreen extends React.Component {
     }
   }
 
+  structureData() {
+    const { albums, photos } = this.props
+    const data = []
+    albums.forEach((album) => {
+      const albumPhotos = photos.filter((photo) => photo.albumId === album.id )
+      if (data[album.userId]) {
+        data[album.userId].userData.push({ albumID: album.id, title: album.title, photos: albumPhotos })
+      } else {
+        data[album.userId] = { userID: album.userId, userData: [] }
+        data[album.userId].userData.push({ albumID: album.id, title: album.title, photos: albumPhotos })
+      }
+    })
+    data.shift()
+    this.setState({ data, dataStructured:true })
+  }
+
   render() {
-    const { albumsLoaded, photosLoaded, overlayVisible } = this.state
+    const { dataStructured, data, overlayVisible } = this.state
     const { photos, userID, albums } = this.props
     return (
       <ScrollView style={styles.container}>
         <NavigationEvents onDidFocus={() => this.checkForData()} />
 
-        <PhotosOverlay />
+        { dataStructured && <PhotosOverlay data={data} /> }
 
-        {albumsLoaded && photosLoaded && <Album photos={photos} userID={userID} albums={albums} />
+        { dataStructured && <Album data={data} userID={userID} />
           || <Image containerStyle={styles.loadingContainer} style={styles.loading} source={loading} />}
 
       </ScrollView>

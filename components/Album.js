@@ -6,16 +6,16 @@ import { Card } from 'react-native-elements'
 import { Preview } from '../components/Preview';
 import { changeOverlayVisibility } from '../actions/UI'
 
-const Album = ({ changeOverlayVisibility, photos = [], userID, albums = [] }) => {
-    const userAlbums = albums.filter((album) => album.userId === userID)
-    return userAlbums.map((album) => (
-        <TouchableWithoutFeedback key={album.id} onPress={() => changeOverlayVisibility()}>
-            <Card containerStyle={styles.albumCard} titleStyle={styles.titleCard} title={album.title}>
+const Album = ({ data, changeOverlayVisibility, userID }) => {
+    const userData = data.filter((object) => object.userID === userID)[0].userData
+    return userData.map((object) => (
+        <TouchableWithoutFeedback key={object.albumID} onPress={() => changeOverlayVisibility(object.albumID)}>
+            <Card containerStyle={styles.albumCard} titleStyle={styles.titleCard} title={object.title}>
                 <View style={[styles.album, { maxHeight: Dimensions.get('window').width * 2 / 4 }]}>
-                    <Preview photos={photos} albumID={album.id} minIndex={0} maxIndex={2} ></Preview>
+                    <Preview photos={object.photos} albumID={object.albumID} minIndex={0} maxIndex={2} ></Preview>
                 </View>
                 <View style={[styles.album, { maxHeight: Dimensions.get('window').width * 1 / 4 }]}>
-                    <Preview photos={photos} albumID={album.id} minIndex={3} maxIndex={5} ></Preview>
+                    <Preview photos={object.photos} albumID={object.albumID} minIndex={3} maxIndex={5} ></Preview>
                 </View>
             </Card>
         </TouchableWithoutFeedback>
@@ -33,6 +33,7 @@ const styles = StyleSheet.create({
     },
     titleCard: {
         fontSize: 20,
+        fontWeight: '700',
         padding: 0,
         marginBottom: 0
     },
@@ -45,7 +46,7 @@ const styles = StyleSheet.create({
 })
 
 const mapDispatchToProps = (dispatch) => ({
-    changeOverlayVisibility: () => dispatch(changeOverlayVisibility())
+    changeOverlayVisibility: (albumID) => dispatch(changeOverlayVisibility(albumID))
 })
 
 export default connect(undefined, mapDispatchToProps)(Album)

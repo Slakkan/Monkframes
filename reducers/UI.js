@@ -1,11 +1,11 @@
 const interfaceDefault = {
-    overlayVisibility: false
+    overlayVisibility: false,
 }
 
 export const UI = (state = interfaceDefault, action) => {
     switch (action.type) {
         case 'OVERLAY_VISIBILITY':
-            return { ...state,  overlayVisibility: !state.overlayVisibility }
+            return { ...state,  overlayVisibility: !state.overlayVisibility, overlayAlbumID: action.albumID }
         default:
             return state
     }
